@@ -1,9 +1,12 @@
 extern crate structopt; //using an external crate
 extern crate colored; //using colours in terminal
-
+extern crate failure; // using the failure crate for better error handling
+extern crate exitfailure; //using the exit failure wrapper for the failure crate
 
 use structopt::StructOpt; 
 use colored::*;
+use failure::ResultExt;
+use exitfailure::ExitFailure;
 
 #[derive(StructOpt)]
 struct Options{
@@ -17,7 +20,7 @@ struct Options{
     catfile: Option<std::path::PathBuf>,
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> { // returns nothing "()" if ok and returns an error if error
+fn main() -> Result<(), ExitFailure> { // returns nothing "()" if ok and returns an error if error
     let options = Options::from_args(); // calling the args from the Options struct defined above
     let message = options.message; // calling the arg names message from the stuct called above
     let eye = if options.dead {"x"} else {"o"};
@@ -25,7 +28,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> { // returns nothing "()" if
     match &options.catfile{
         Some (path) =>
         {
-            let cat_template = std::fs::read_to_string(path)?;
+            let cat_template = std::fs::read_to_string(path)
+                                        .with_context(|_| format!(
+                                            "could not read file {:?}",
+                                            path
+                                        ))?;
                                     //.expect(&format!("could not read file {:?}", path));
             let cat_picture = cat_template.replace("{eye}", eye);
             println!("{}", cat_picture);
