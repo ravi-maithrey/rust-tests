@@ -17,7 +17,7 @@ struct Options{
     catfile: Option<std::path::PathBuf>,
 }
 
-fn main() {
+fn main() -> Result<(), Box<dyn std::error::Error>> { // returns nothing "()" if ok and returns an error if error
     let options = Options::from_args(); // calling the args from the Options struct defined above
     let message = options.message; // calling the arg names message from the stuct called above
     let eye = if options.dead {"x"} else {"o"};
@@ -25,8 +25,8 @@ fn main() {
     match &options.catfile{
         Some (path) =>
         {
-            let cat_template = std::fs::read_to_string(path)
-                                    .expect(&format!("could not read file {:?}", path));
+            let cat_template = std::fs::read_to_string(path)?;
+                                    //.expect(&format!("could not read file {:?}", path));
             let cat_picture = cat_template.replace("{eye}", eye);
             println!("{}", cat_picture);
         },
@@ -44,4 +44,5 @@ fn main() {
             println!("     =( I )=");
         }
     }
+    Ok(()) // returning the ok declared in main
 }
